@@ -33,7 +33,7 @@ public class DelayTaskRepositoryTest {
         delayTaskInfo.setExecuteStatus(1);
         delayTaskInfo.setExecuteMessage("message");
         DelayTaskInfo save = delayTaskRepository.save(delayTaskInfo);
-
+        MatcherAssert.assertThat(delayTaskInfo.getId(), CoreMatchers.notNullValue());
         Optional<DelayTaskInfo> optionalDelayTaskInfo = delayTaskRepository.findById(save.getId());
         MatcherAssert.assertThat(optionalDelayTaskInfo.isPresent(), CoreMatchers.is(true));
         MatcherAssert.assertThat(optionalDelayTaskInfo.get().getName(), CoreMatchers.is("测试"));
