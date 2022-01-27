@@ -30,14 +30,14 @@ public class DelayTaskTemplate {
         // 2.将任务存入数据库
         delayTaskRepository.save(delayTaskInfo);
         // 3.如果任务执行时间在5s内，放入时间轮中
-        if(isInnerFiveSecond(executeTime)){
+        if(TimeRing.isInnerFiveSecond(executeTime)){
             TimeRing.put(executeTime, delayTaskInfo.getId());
         }
     }
 
     private void setStatus(DelayTaskInfo delayTaskInfo){
         // 判断任务执行时间
-        if(isInnerFiveSecond(delayTaskInfo.getExecuteTime())){
+        if(TimeRing.isInnerFiveSecond(delayTaskInfo.getExecuteTime())){
             delayTaskInfo.setExecuteStatus(ExecuteStatus.EXECUTE.status());
         }
         else {
@@ -45,10 +45,5 @@ public class DelayTaskTemplate {
         }
     }
 
-    private static final long FIVE_SECOND = 5000;
 
-    private boolean isInnerFiveSecond(long time) {
-        long now = System.currentTimeMillis();
-        return now + FIVE_SECOND > time;
-    }
 }

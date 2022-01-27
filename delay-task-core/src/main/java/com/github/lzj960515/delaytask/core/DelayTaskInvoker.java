@@ -17,6 +17,18 @@ public final class DelayTaskInvoker {
 
     private static final Logger log = LoggerFactory.getLogger(DelayTaskInvoker.class);
 
+    private static ExecuteResult doInvoke(DelayTaskInfo delayTaskInfo){
+        // 1.从上下文中取出任务对应的方法
+        DelayTaskMethod delayTaskMethod = DelayTaskContext.find(delayTaskInfo.getName());
+        // 2.调用
+        try {
+            return (ExecuteResult) delayTaskMethod.getMethod().invoke(delayTaskMethod.getBean(), delayTaskInfo.getInfo());
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.error(e.getMessage(), e);
+            return ExecuteResult.FAIL;
+        }
+    }
+
     public static ExecuteResult invoke(DelayTaskInfo delayTaskInfo){
         // 1.从上下文中取出任务对应的方法
         DelayTaskMethod delayTaskMethod = DelayTaskContext.find(delayTaskInfo.getName());

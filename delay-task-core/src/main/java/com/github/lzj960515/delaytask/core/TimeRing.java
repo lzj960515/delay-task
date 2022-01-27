@@ -47,4 +47,15 @@ public class TimeRing {
         return (int) ((time / 1000) % 60);
     }
 
+
+    private static final long FIVE_SECOND = 5000;
+
+    public static long getAfterFiveSecond(){
+        return System.currentTimeMillis() + FIVE_SECOND;
+    }
+
+    public static boolean isInnerFiveSecond(long time) {
+        long now = System.currentTimeMillis();
+        return now + FIVE_SECOND > time;
+    }
 }

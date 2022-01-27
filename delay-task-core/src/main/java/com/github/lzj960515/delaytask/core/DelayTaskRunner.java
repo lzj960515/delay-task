@@ -26,6 +26,7 @@ public class DelayTaskRunner implements Runnable {
         // 1.查询任务
         for (Long taskId : taskIds) {
             DelayTaskInfo delayTaskInfo = delayTaskRepository.getOne(taskId);
+            // TODO 以下方法抽出
             // 2.调用延迟任务调度器
             ExecuteResult result = DelayTaskInvoker.invoke(delayTaskInfo);
             // 3.更新任务状态

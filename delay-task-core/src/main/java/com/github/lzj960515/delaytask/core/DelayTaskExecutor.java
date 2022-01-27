@@ -1,5 +1,6 @@
 package com.github.lzj960515.delaytask.core;
 
+import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
 import com.github.lzj960515.delaytask.thread.NameThreadFactory;
 import com.github.lzj960515.delaytask.thread.ThreadPool;
@@ -28,8 +29,32 @@ public class DelayTaskExecutor {
     }
 
     public void queryTask() {
-        // 查询数据库中的任务放入时间轮中
-
+        // 处理时间轮中的任务
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new NameThreadFactory("delay-task-query"));
+        scheduledThreadPoolExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                // 1.查询5s内的任务放入时间轮中
+                List<DelayTaskInfo> taskInfoList = delayTaskRepository.findByExecuteTime(TimeRing.getAfterFiveSecond());
+                for (DelayTaskInfo delayTaskInfo : taskInfoList) {
+                    // 2.判断时间
+                    // 2.1如果时间在这之前，直接执行任务
+                    long now = System.currentTimeMillis();
+                    long executeTime = delayTaskInfo.getExecuteTime();
+                    if(now >= executeTime){
+                        // TODO 改为线程执行
+                        DelayTaskInvoker.invoke(delayTaskInfo);
+                    }else {
+                        // 2.1否则将任务放入时间轮
+                        TimeRing.put(executeTime, delayTaskInfo.getId());
+                    }
+                }
+                long time = System.currentTimeMillis();
+                // 让时间到下一个5秒
+                long delay = 5000 - time % 1000;
+                scheduledThreadPoolExecutor.schedule(this, delay, TimeUnit.MICROSECONDS);
+            }
+        });
     }
     private void executeTask() {
         // 处理时间轮中的任务
