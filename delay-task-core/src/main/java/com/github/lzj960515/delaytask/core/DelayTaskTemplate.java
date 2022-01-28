@@ -25,19 +25,20 @@ public class DelayTaskTemplate {
      */
     public void save(DelayTaskInfo delayTaskInfo) {
         Long executeTime = delayTaskInfo.getExecuteTime();
+        boolean innerFiveSecond = TimeRing.isInnerFiveSecond(executeTime);
         // 1.设置任务状态
-        this.setStatus(delayTaskInfo);
+        this.setStatus(delayTaskInfo, innerFiveSecond);
         // 2.将任务存入数据库
         delayTaskRepository.save(delayTaskInfo);
         // 3.如果任务执行时间在5s内，放入时间轮中
-        if(TimeRing.isInnerFiveSecond(executeTime)){
+        if(innerFiveSecond){
             TimeRing.put(executeTime, delayTaskInfo.getId());
         }
     }
 
-    private void setStatus(DelayTaskInfo delayTaskInfo){
+    private void setStatus(DelayTaskInfo delayTaskInfo, boolean innerFiveSecond){
         // 判断任务执行时间
-        if(TimeRing.isInnerFiveSecond(delayTaskInfo.getExecuteTime())){
+        if(innerFiveSecond){
             delayTaskInfo.setExecuteStatus(ExecuteStatus.EXECUTE.status());
         }
         else {

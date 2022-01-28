@@ -29,7 +29,7 @@ public class TimeRing {
         long time = System.currentTimeMillis();
         int second = getSecond(time);
 
-        List<Long> taskIds = RING.getOrDefault(second, new ArrayList<>(0));
+        List<Long> taskIds = remove(second);
         List<Long> moreTaskIds = new ArrayList<>(taskIds.size());
         moreTaskIds.addAll(taskIds);
         // 为防止任务执行时间过长，跳过了前面几秒任务，将前面2秒的任务也取出
@@ -38,9 +38,17 @@ public class TimeRing {
         for(int i = 1; i < 2; i++){
             // 当此时为1秒时，前面的2秒为0和59 如果只是减，将得到一个负数
             int beforeSecond = (second + 60 - i) % 60;
-            moreTaskIds.addAll(RING.getOrDefault(beforeSecond, new ArrayList<>(0)));
+            moreTaskIds.addAll(remove(beforeSecond));
         }
         return moreTaskIds;
+    }
+
+    private static List<Long> remove(int second){
+        List<Long> taskIds = RING.remove(second);
+        if(taskIds != null){
+            return taskIds;
+        }
+        return new ArrayList<>(0);
     }
 
     private static int getSecond(long time){

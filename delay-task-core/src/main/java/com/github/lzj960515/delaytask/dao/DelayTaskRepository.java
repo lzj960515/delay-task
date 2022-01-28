@@ -17,6 +17,6 @@ public interface DelayTaskRepository extends JpaRepository<DelayTaskInfo, Long> 
      * @param executeTime 执行时间
      * @return 任务列表
      */
-    @Query("select d from delay_task d where execute_time <= ?1 and execute_status = 1")
+    @Query(value = "select d.* from delay_task d where d.execute_time <= ?1 and d.execute_status = 1", nativeQuery = true)
     List<DelayTaskInfo> findByExecuteTime(Long executeTime);
 }

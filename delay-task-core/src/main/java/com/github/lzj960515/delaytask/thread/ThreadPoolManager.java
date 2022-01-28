@@ -1,7 +1,6 @@
 package com.github.lzj960515.delaytask.thread;
 
 
-import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -11,34 +10,16 @@ import java.util.concurrent.*;
  */
 public final class ThreadPoolManager {
 
-    private static final Map<String, ExecutorService> RESOURCES_MANAGER = new ConcurrentHashMap<>(8);
-
-    static {
-        ThreadUtil.addShutdownHook(ThreadPoolManager::shutdown);
-    }
-
     public static ExecutorService getExecutor(String threadName) {
-        ExecutorService executorService = RESOURCES_MANAGER.get(threadName);
-        if(executorService == null){
-            synchronized (ThreadPoolManager.class) {
-                executorService = RESOURCES_MANAGER.get(threadName);
-                if(executorService == null){
-                    final int count = ThreadUtil.getSuitableThreadCount();
-                    ThreadPoolExecutor executor = new ThreadPoolExecutor(count, count, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(200), new NameThreadFactory(threadName));
-                    ThreadPoolManager.register(threadName, executor);
-                }
-            }
-        }
-        return executorService;
+        final int count = ThreadUtil.getSuitableThreadCount();
+        return new ThreadPoolExecutor(count, count, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(Integer.MAX_VALUE), new NameThreadFactory(threadName));
     }
 
-    public static void register(String name, ExecutorService executor) {
-        RESOURCES_MANAGER.put(name, executor);
+    public static ExecutorService getSingleExecutor(String threadName) {
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(Integer.MAX_VALUE), new NameThreadFactory(threadName));
     }
 
-    public static void shutdown(){
-        for (Map.Entry<String, ExecutorService> executorEntry : RESOURCES_MANAGER.entrySet()) {
-            ThreadUtil.shutdownThreadPool(executorEntry.getValue());
-        }
+    public static ScheduledThreadPoolExecutor getSingleScheduledExecutor(String threadName) {
+        return new ScheduledThreadPoolExecutor(1,  new NameThreadFactory(threadName));
     }
 }
