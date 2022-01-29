@@ -19,9 +19,15 @@ public class DemoJob {
 
     private static final Logger log = LoggerFactory.getLogger(DemoJob.class);
 
-    @DelayTask(name = "demoJob")
+    @DelayTask(name = "demoJob0")
     public ExecuteResult job(String info) {
-        log.error("延迟任务被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
+        log.info("延迟任务「job0」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
+        return ExecuteResult.SUCCESS;
+    }
+
+    @DelayTask(name = "demoJob1")
+    public ExecuteResult job2(String info) {
+        log.info("延迟任务「job1」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
         return ExecuteResult.SUCCESS;
     }
 }
