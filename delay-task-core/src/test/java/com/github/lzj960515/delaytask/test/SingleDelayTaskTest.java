@@ -1,7 +1,6 @@
 package com.github.lzj960515.delaytask.test;
 
 import com.github.lzj960515.delaytask.core.DelayTaskTemplate;
-import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -23,14 +22,10 @@ public class SingleDelayTaskTest {
 
     @Test
     public void testDelayTask() throws IOException {
-        DelayTaskInfo delayTaskInfo = new DelayTaskInfo();
-        delayTaskInfo.setName("demoJob");
-        delayTaskInfo.setDescription("demo任务测试");
-        delayTaskInfo.setInfo("id=1");
+        for (int i = 0; i < 100; i++){
+            delayTaskTemplate.save("demoJob", i + "", LocalDateTime.now().plusSeconds(10+i), "测试任务");
+        }
         System.out.println("保存延时任务，时间："+ LocalDateTime.now());
-        // TODO 这里不够人性化，需支持指定时间，或者指定多长时间之后 使用 number + timeUnit方式 或者 LocalDateTime方式
-        delayTaskInfo.setExecuteTime(System.currentTimeMillis() + 4000);
-        delayTaskTemplate.save(delayTaskInfo);
         System.in.read();
     }
 }

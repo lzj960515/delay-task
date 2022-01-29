@@ -1,5 +1,7 @@
 package com.github.lzj960515.delaytask.core;
 
+import com.github.lzj960515.delaytask.util.TimeUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,14 +22,14 @@ public class TimeRing {
 
 
     public static void put(long time, Long taskId){
-        int second = getSecond(time);
+        int second = TimeUtil.getSecond(time);
         List<Long> taskIds = RING.computeIfAbsent(second, k -> new ArrayList<>());
         taskIds.add(taskId);
     }
 
     public static List<Long> pull(){
         long time = System.currentTimeMillis();
-        int second = getSecond(time);
+        int second = TimeUtil.getSecond(time);
 
         List<Long> taskIds = remove(second);
         List<Long> moreTaskIds = new ArrayList<>(taskIds.size());
@@ -49,21 +51,5 @@ public class TimeRing {
             return taskIds;
         }
         return new ArrayList<>(0);
-    }
-
-    private static int getSecond(long time){
-        return (int) ((time / 1000) % 60);
-    }
-
-
-    private static final long FIVE_SECOND = 5000;
-
-    public static long getAfterFiveSecond(){
-        return System.currentTimeMillis() + FIVE_SECOND;
-    }
-
-    public static boolean isInnerFiveSecond(long time) {
-        long now = System.currentTimeMillis();
-        return now + FIVE_SECOND > time;
     }
 }

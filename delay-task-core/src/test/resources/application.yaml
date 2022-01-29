@@ -20,7 +20,7 @@ spring:
       connection-timeout: 30000
       connection-test-query: SELECT 1 FROM DUAL
   jpa:
-    show-sql: true
+    show-sql: false
   h2:
     console:
       enabled: true

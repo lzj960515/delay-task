@@ -21,8 +21,7 @@ public class DemoJob {
 
     @DelayTask(name = "demoJob")
     public ExecuteResult job(String info) {
-        log.info("延迟任务被调用了,参数信息 {}", info);
-        log.info("当前时间：{}", LocalDateTime.now());
+        log.error("延迟任务被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
         return ExecuteResult.SUCCESS;
     }
 }

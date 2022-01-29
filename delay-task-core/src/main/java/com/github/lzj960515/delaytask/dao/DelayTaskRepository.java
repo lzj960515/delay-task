@@ -11,7 +11,7 @@ import java.util.List;
  * @since 1.0.0
  */
 public interface DelayTaskRepository extends JpaRepository<DelayTaskInfo, Long> {
-
+    // TODO JPA如何开启事务？如何关闭日志？
     /**
      * 查询执行时间小于某时间的所有任务
      * @param executeTime 执行时间
