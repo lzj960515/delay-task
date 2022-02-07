@@ -1,5 +1,6 @@
 package com.github.lzj960515.delaytask.core;
 
+import com.github.lzj960515.delaytask.config.DelayTaskProperties;
 import com.github.lzj960515.delaytask.util.TimeUtil;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +28,8 @@ public class DelayTaskExecutor {
 
     @Resource
     private DelayTaskRepository delayTaskRepository;
+    @Resource
+    private DelayTaskProperties delayTaskProperties;
 
     public void start() {
         long now = System.currentTimeMillis();
@@ -36,6 +40,7 @@ public class DelayTaskExecutor {
         }
         this.queryTask();
         this.executeTask();
+        this.clearSuccessTask();
     }
 
     public void queryTask() {
@@ -67,5 +72,15 @@ public class DelayTaskExecutor {
         }, 100, 1000, TimeUnit.MILLISECONDS);
     }
 
+    private void clearSuccessTask(){
+        int taskRetentionDays = delayTaskProperties.getTaskRetentionDays();
+        if(taskRetentionDays <= 0){
+            return;
+        }
+        ThreadPool.DELAY_TASK_CLEANER.scheduleAtFixedRate(() -> {
+            LocalDate clearDate = LocalDate.now().plusDays(-taskRetentionDays);
+            delayTaskRepository.deleteByExecuteTime(TimeUtil.localDate2Millis(clearDate));
+        }, 0, 1, TimeUnit.DAYS);
+    }
 
 }

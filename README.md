@@ -1,8 +1,14 @@
-# 延时任务
+# 延时任务Delay-Task
 
-## 需求描述
+## 一、简介
 
-在日常开发中，常常面临这样的需求：执行A任务后，在10秒后执行B任务。
+### 1.1 概述
+
+Delay-Task作为一个延时任务组件，主要用于解决简单系统需要延时任务问题。
+
+### 1.2 为什么使用它
+
+在日常开发中，常常遇到需要延时执行的需求：执行A任务后，在15分钟后执行B任务，如订单超时取消。
 
 解决方案有三种：
 
@@ -26,60 +32,96 @@
 
 由于三种方式各有优劣，于是我诞生了一个想法：将MQ中的延时队列功能做成一个组件，让服务自己生产消息，自己消费，相当于2、3两种方案的结合体，既能保证任务的可靠性，也能保证任务执行的精确性，岂不美哉！
 
-## 架构设计
+### 1.3 特性
 
-设计分为两个部分
+1、简单：在方法上加上注解即可达到延时任务效果
 
-1、存储任务
+2、精准：延时任务的调度时间误差在1秒之间
 
-2、执行任务
+3、轻量：使用时间轮数据结构，占用内存极低
 
-任务的数据结构：
+4、吞吐量：调度模型使用多线程，实际并发量依赖于MySQL的性能
 
-```
-任务id：主键
-任务名：任务的名称，与执行任务的方法对应，用于执行任务时寻找执行任务的方法
-任务描述：任务描述
-任务信息：放置执行任务所需的参数信息
-执行时间：任务的执行时间
-执行状态：任务执行状态，创建，执行中，执行成功，执行失败
-失败原因：存放任务执行失败的原因
+## 二、快速入门
+
+1、执行数据库脚本，脚本位置：
+
+```sql
+doc/mysql/schema.sql
 ```
 
-存储任务流程：
+2、编写延时任务
 
-业务使用：执行A任务后，调用存储任务方法存储B任务
+```java
+@Component
+public class DemoJob {
 
-组件逻辑：判断B任务的执行时间，若执行时间小于5s，任务状态设置为执行中，否则状态为开始，往数据库插入B任务数据，如果任务为执行中，立即将任务放入juc延时队列。
+    private static final Logger log = LoggerFactory.getLogger(DemoJob.class);
 
-执行任务流程：
+    @DelayTask(name = "demoJob")
+    public void job(String info) {
+        log.info("延迟任务「job」被调用了, 参数:{} 当前时间：{}", info, LocalDateTime.now());
+        DelayTaskHelper.handleSuccess();
+    }
+}
+```
 
-定时扫描MySQL，扫描5s后之前需执行的任务，将任务放入延时队列。
+3、保存延时任务
 
-从延时队列中取出任务，使用任务名定位到执行任务方法，调用方法，根据方法返回情况设置任务执行状态
+```java
+public class SingleDelayTaskTest {
 
-维护任务方法的方式：
+    @Resource
+    private DelayTaskTemplate delayTaskTemplate;
 
-通过自定义注解：DelayTask(name="B"), 程序启动时，将加了该注解的方法注册到一个Map中。
+    @Test
+    public void testDelayTask() throws IOException {
+        delayTaskTemplate.save("demoJob", i + "", LocalDateTime.now().plusSeconds(10+i), "测试任务");
+    }
+}
+```
 
+> demoJob为任务名称，保存时与注解中的name相对应
 
+## 三、其他
 
-## 问题
+### 3.1 关于保存方法
 
-任务执行器采用延时队列的方式做到任务执行时间精准控制，但这样带来一个问题，队列的数据结构是fifo，延时队列的数据结构是堆树，取任务只能一个一个取，延时队列中还涉及了线程pack与unpack的过程，并发量是个问题。
+保存方法有两种
 
-而实际情况中，可能在某一个秒大量的延时任务涌现，一个一个取是不合理的，正确的做法应该是把这一秒内的所有任务一次性全部取出来。
+```java
+    /**
+     * 指定时间执行延迟任务
+     * @param taskName 任务名称
+     * @param info 任务信息
+     * @param executeTime 执行时间
+     * @param description 描述
+     */
+    public void save(@NonNull String taskName, String info, @NonNull LocalDateTime executeTime, String description)
+```
 
-由此发现，延时队列的关注点在于顺序性。而实际情况更加关注时间性，即只要求到某一时刻就把相应的任务执行即可，而不要求这些任务的顺序先后，这些任务完全可以并行执行。
+```java
+    /**
+     * 指定时间执行延迟任务
+     * @param taskName 任务名称
+     * @param info 任务信息
+     * @param time 延迟时间
+     * @param unit 时间单位
+     * @param description 描述
+     */
+    public void save(@NonNull String taskName, String info, @NonNull long time, TimeUnit unit, String description)
+```
 
-这时就有一种更好的数据结构：时间轮
+### 3.2 清理已执行成功的任务
 
+但任务已经被执行成功时，可以自主选择是否从数据库清除。
 
-如何解决分布式场景？
-是否要增加锁机制？
-开启机制？
-开启之后才调用分布式逻辑？
+配置：
 
-增加超时情况
-增加清理数据库逻辑
+```yaml
+delay-task:
+  task-retention-days: 30
+```
+
+> 保留任务天数，30表示只保留30天内的任务记录，如果不配置或者配置为-1则永不清理
 

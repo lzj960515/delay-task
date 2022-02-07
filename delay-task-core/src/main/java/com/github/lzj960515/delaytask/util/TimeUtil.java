@@ -1,5 +1,6 @@
 package com.github.lzj960515.delaytask.util;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,10 @@ public final class TimeUtil {
 
     public static long localDateTime2Millis(LocalDateTime time) {
         return time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public static long localDate2Millis(LocalDate date) {
+        return localDateTime2Millis(date.atStartOfDay());
     }
 
     /**

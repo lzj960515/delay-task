@@ -4,7 +4,7 @@ import com.github.lzj960515.delaytask.util.TimeUtil;
 import com.github.lzj960515.delaytask.constant.ExecuteStatus;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
-import com.sun.istack.internal.NotNull;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -48,7 +48,7 @@ public class DelayTaskTemplate {
      * @param executeTime 执行时间
      * @param description 描述
      */
-    public void save(@NotNull String taskName, String info, @NotNull LocalDateTime executeTime, String description){
+    public void save(@NonNull String taskName, String info, @NonNull LocalDateTime executeTime, String description){
         Assert.hasText(taskName, "taskName must not be null");
         Assert.notNull(executeTime, "executeTime must not be null");
         DelayTaskInfo delayTaskInfo = new DelayTaskInfo();
@@ -59,7 +59,15 @@ public class DelayTaskTemplate {
         this.save(delayTaskInfo);
     }
 
-    public void save(@NotNull String taskName, String info, @NotNull long time, TimeUnit unit, String description){
+    /**
+     * 指定时间执行延迟任务
+     * @param taskName 任务名称
+     * @param info 任务信息
+     * @param time 延迟时间
+     * @param unit 时间单位
+     * @param description 描述
+     */
+    public void save(@NonNull String taskName, String info, @NonNull long time, TimeUnit unit, String description){
         long executeTime = TimeUtil.convert2Millis(time, unit);
         DelayTaskInfo delayTaskInfo = new DelayTaskInfo();
         delayTaskInfo.setName(taskName);

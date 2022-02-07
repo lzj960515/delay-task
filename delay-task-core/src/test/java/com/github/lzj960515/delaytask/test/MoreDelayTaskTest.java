@@ -24,7 +24,7 @@ public class MoreDelayTaskTest {
      */
     @Test
     public void testMoreDelayTest() throws IOException {
-        // 开十个线程
+        // 开10个线程
         for(int n = 0; n < 10; n++ ){
             Thread t  = new Thread(() -> {
                 // 测试100s
@@ -37,6 +37,7 @@ public class MoreDelayTaskTest {
             });
             t.start();
         }
+        System.out.println("任务保存完毕");
         System.in.read();
     }
 

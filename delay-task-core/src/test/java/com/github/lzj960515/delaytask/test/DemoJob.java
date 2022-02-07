@@ -27,13 +27,13 @@ public class DemoJob {
 
     @DelayTask(name = "demoJob0")
     public void job0(String info) {
-        log.info("延迟任务「job0」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
+//        log.info("延迟任务「job0」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
         DelayTaskHelper.handleSuccess();
     }
 
     @DelayTask(name = "demoJob1")
     public void job1(String info) {
-        log.info("延迟任务「job1」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
+//        log.info("延迟任务「job1」被调用了, id:{} 当前时间：{}", info, LocalDateTime.now());
         DelayTaskHelper.handleSuccess();
     }
 }

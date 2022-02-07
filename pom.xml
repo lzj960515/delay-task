@@ -4,7 +4,7 @@
 
     <groupId>com.github.lzj960515</groupId>
     <artifactId>delay-task</artifactId>
-    <version>0.0.1</version>
+    <version>${revision}</version>
     <inceptionYear>2022-Now</inceptionYear>
     <packaging>pom</packaging>
 
@@ -13,11 +13,14 @@
     <url>https://github.com/lzj960515/delay-task</url>
 
     <properties>
+        <revision>0.0.1</revision>
+
         <java.version>8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <flatten-maven-plugin.version>1.2.5</flatten-maven-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <spring-boot.version>2.3.5.RELEASE</spring-boot.version>
@@ -49,6 +52,7 @@
 
     <modules>
         <module>delay-task-core</module>
+        <module>delay-task-starter</module>
     </modules>
 
     <build>
@@ -75,11 +79,39 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${maven-source-plugin.version}</version>
+                        <configuration>
+                            <attach>true</attach>
+                        </configuration>
                         <executions>
                             <execution>
-                                <phase>package</phase>
+                                <phase>compile</phase>
                                 <goals>
-                                    <goal>jar-no-fork</goal>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <version>${flatten-maven-plugin.version}</version>
+                        <configuration>
+                            <updatePomFile>true</updatePomFile>
+                            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
                                 </goals>
                             </execution>
                         </executions>
