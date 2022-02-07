@@ -1,9 +1,9 @@
 package com.github.lzj960515.delaytask.core;
 
-import com.github.lzj960515.delaytask.constant.ExecuteResult;
-import com.github.lzj960515.delaytask.constant.ExecuteStatus;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
+import com.github.lzj960515.delaytask.helper.DelayTaskExecuteInfo;
+import com.github.lzj960515.delaytask.helper.DelayTaskHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,31 +40,32 @@ public final class DelayTaskInvoker implements Runnable {
         }
         DelayTaskInfo delayTaskInfo = delayTaskInfoOptional.get();
         // 2.调用延迟任务
-        ExecuteResult result = this.doInvoke(delayTaskInfo);
+        this.doInvoke(delayTaskInfo);
         // 3.更新任务状态
-        if (result != null && result.equals(ExecuteResult.SUCCESS)) {
-            delayTaskInfo.setExecuteStatus(ExecuteStatus.SUCCESS.status());
-        } else {
-            delayTaskInfo.setExecuteStatus(ExecuteStatus.FAIL.status());
-        }
+        DelayTaskExecuteInfo executeInfo = DelayTaskHelper.getExecuteInfo();
+        delayTaskInfo.setExecuteStatus(executeInfo.getExecuteStatus());
+        delayTaskInfo.setExecuteMessage(executeInfo.getExecuteMessage());
         delayTaskRepository.save(delayTaskInfo);
     }
 
-    private ExecuteResult doInvoke(DelayTaskInfo delayTaskInfo) {
+    private void doInvoke(DelayTaskInfo delayTaskInfo) {
         // 1.从上下文中取出任务对应的方法
         DelayTaskMethod delayTaskMethod = DelayTaskContext.find(delayTaskInfo.getName());
+        if(delayTaskMethod == null){
+            log.error("not found delay task method for name: {}", delayTaskInfo.getName());
+            DelayTaskHelper.handleFail("not found delay task method for name: " + delayTaskInfo.getName());
+            return;
+        }
         try {
             // 2.调用
-            return (ExecuteResult) delayTaskMethod.getMethod().invoke(delayTaskMethod.getBean(), delayTaskInfo.getInfo());
-        } catch (Throwable e) {
-            // 反射异常需要取出实际中的异常信息
-            if (e instanceof InvocationTargetException) {
-                InvocationTargetException ex = (InvocationTargetException) e;
-                log.error(ex.getTargetException().getMessage(), ex.getTargetException());
-            } else {
-                log.error(e.getMessage(), e);
-            }
-            return ExecuteResult.FAIL;
+            delayTaskMethod.getMethod().invoke(delayTaskMethod.getBean(), delayTaskInfo.getInfo());
+        } catch (InvocationTargetException e){
+            log.error(e.getTargetException().getMessage(), e.getTargetException());
+            DelayTaskHelper.handleFail(e.getTargetException().getMessage());
+        }
+        catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            DelayTaskHelper.handleFail(e.getMessage());
         }
     }
 }

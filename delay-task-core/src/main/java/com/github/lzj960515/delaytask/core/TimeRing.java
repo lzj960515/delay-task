@@ -1,10 +1,15 @@
 package com.github.lzj960515.delaytask.core;
 
 import com.github.lzj960515.delaytask.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,23 +20,24 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TimeRing {
 
+    private static final Logger log = LoggerFactory.getLogger(TimeRing.class);
+
     /**
      * 时间轮 秒:任务id列表
      */
-    private static final Map<Integer, ArrayList<Long>> RING = new ConcurrentHashMap<>(64, 1);
+    private static final Map<Integer, Set<Long>> RING = new ConcurrentHashMap<>(64, 1);
 
 
     public static void put(long time, Long taskId){
         int second = TimeUtil.getSecond(time);
-        List<Long> taskIds = RING.computeIfAbsent(second, k -> new ArrayList<>());
+        Set<Long> taskIds = RING.computeIfAbsent(second, k -> new HashSet<>());
         taskIds.add(taskId);
     }
 
     public static List<Long> pull(){
         long time = System.currentTimeMillis();
         int second = TimeUtil.getSecond(time);
-
-        List<Long> taskIds = remove(second);
+        Set<Long> taskIds = remove(second);
         List<Long> moreTaskIds = new ArrayList<>(taskIds.size());
         moreTaskIds.addAll(taskIds);
         // 为防止任务执行时间过长，跳过了前面几秒任务，将前面2秒的任务也取出
@@ -45,11 +51,11 @@ public class TimeRing {
         return moreTaskIds;
     }
 
-    private static List<Long> remove(int second){
-        List<Long> taskIds = RING.remove(second);
+    private static Set<Long> remove(int second){
+        Set<Long> taskIds = RING.remove(second);
         if(taskIds != null){
             return taskIds;
         }
-        return new ArrayList<>(0);
+        return Collections.emptySet();
     }
 }
