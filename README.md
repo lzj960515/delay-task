@@ -44,13 +44,22 @@ Delay-Task作为一个延时任务组件，主要用于解决简单系统需要�
 
 ## 二、快速入门
 
-1、执行数据库脚本，脚本位置：
+1、引入依赖
+```java
+        <dependency>
+            <groupId>com.github.lzj960515</groupId>
+            <artifactId>delay-task-starter</artifactId>
+            <version>0.0.2</version>
+        </dependency>
+```
+
+2、执行数据库脚本，脚本位置：
 
 ```sql
 doc/mysql/schema.sql
 ```
 
-2、编写延时任务
+3、编写延时任务
 
 ```java
 @Component
@@ -65,8 +74,9 @@ public class DemoJob {
     }
 }
 ```
+> info参数为保存延时任务时的任务信息
 
-3、保存延时任务
+4、在业务逻辑中保存延时任务
 
 ```java
 public class SingleDelayTaskTest {
@@ -114,7 +124,7 @@ public class SingleDelayTaskTest {
 
 ### 3.2 清理已执行成功的任务
 
-但任务已经被执行成功时，可以自主选择是否从数据库清除。
+当任务已经被执行成功时，可以自主选择是否从数据库清除。
 
 配置：
 
