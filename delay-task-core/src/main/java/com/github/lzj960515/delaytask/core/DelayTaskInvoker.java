@@ -1,5 +1,6 @@
 package com.github.lzj960515.delaytask.core;
 
+import com.github.lzj960515.delaytask.constant.ExecuteStatus;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
 import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
 import com.github.lzj960515.delaytask.helper.DelayTaskExecuteInfo;
@@ -43,8 +44,12 @@ public final class DelayTaskInvoker implements Runnable {
         this.doInvoke(delayTaskInfo);
         // 3.更新任务状态
         DelayTaskExecuteInfo executeInfo = DelayTaskHelper.getExecuteInfo();
-        delayTaskInfo.setExecuteStatus(executeInfo.getExecuteStatus());
-        delayTaskInfo.setExecuteMessage(executeInfo.getExecuteMessage());
+        if(executeInfo != null){
+            delayTaskInfo.setExecuteStatus(executeInfo.getExecuteStatus());
+            delayTaskInfo.setExecuteMessage(executeInfo.getExecuteMessage());
+        }else {
+            delayTaskInfo.setExecuteStatus(ExecuteStatus.SUCCESS.status());
+        }
         delayTaskRepository.save(delayTaskInfo);
     }
 

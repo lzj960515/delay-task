@@ -31,7 +31,7 @@ public final class TimeUtil {
      * @return 实际时间
      */
     public static long convert2Millis(long time, TimeUnit unit){
-        long delayTime = unit.convert(time, TimeUnit.MILLISECONDS);
+        long delayTime = unit.toMillis(time);
         return System.currentTimeMillis() + delayTime;
     }
 

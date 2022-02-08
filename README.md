@@ -49,7 +49,7 @@ Delay-Task作为一个延时任务组件，主要用于解决简单系统需要�
         <dependency>
             <groupId>com.github.lzj960515</groupId>
             <artifactId>delay-task-starter</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
         </dependency>
 ```
 
