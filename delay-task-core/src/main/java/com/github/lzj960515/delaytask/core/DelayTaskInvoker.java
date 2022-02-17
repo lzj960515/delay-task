@@ -2,14 +2,13 @@ package com.github.lzj960515.delaytask.core;
 
 import com.github.lzj960515.delaytask.constant.ExecuteStatus;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
-import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
+import com.github.lzj960515.delaytask.dao.DelayTaskDao;
 import com.github.lzj960515.delaytask.helper.DelayTaskExecuteInfo;
 import com.github.lzj960515.delaytask.helper.DelayTaskHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
 
 /**
  * 延迟任务调度器
@@ -21,11 +20,11 @@ public final class DelayTaskInvoker implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(DelayTaskInvoker.class);
 
-    private final DelayTaskRepository delayTaskRepository;
+    private final DelayTaskDao delayTaskDao;
     private final Long taskId;
 
-    public DelayTaskInvoker(DelayTaskRepository delayTaskRepository, Long taskId) {
-        this.delayTaskRepository = delayTaskRepository;
+    public DelayTaskInvoker(DelayTaskDao delayTaskDao, Long taskId) {
+        this.delayTaskDao = delayTaskDao;
         this.taskId = taskId;
     }
 
@@ -35,22 +34,16 @@ public final class DelayTaskInvoker implements Runnable {
     }
 
     private void invoke() {
-        Optional<DelayTaskInfo> delayTaskInfoOptional = delayTaskRepository.findById(taskId);
-        if (!delayTaskInfoOptional.isPresent()) {
-            return;
-        }
-        DelayTaskInfo delayTaskInfo = delayTaskInfoOptional.get();
+        DelayTaskInfo delayTaskInfo = delayTaskDao.findById(taskId);
         // 2.调用延迟任务
         this.doInvoke(delayTaskInfo);
         // 3.更新任务状态
         DelayTaskExecuteInfo executeInfo = DelayTaskHelper.getExecuteInfo();
         if(executeInfo != null){
-            delayTaskInfo.setExecuteStatus(executeInfo.getExecuteStatus());
-            delayTaskInfo.setExecuteMessage(executeInfo.getExecuteMessage());
+            delayTaskDao.updateStatus(taskId, executeInfo.getExecuteStatus(), executeInfo.getExecuteMessage());
         }else {
-            delayTaskInfo.setExecuteStatus(ExecuteStatus.SUCCESS.status());
+            delayTaskDao.updateStatus(taskId, ExecuteStatus.SUCCESS.status(), "");
         }
-        delayTaskRepository.save(delayTaskInfo);
     }
 
     private void doInvoke(DelayTaskInfo delayTaskInfo) {

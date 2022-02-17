@@ -1,6 +1,6 @@
 package com.github.lzj960515.delaytask.core;
 
-import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
+import com.github.lzj960515.delaytask.dao.DelayTaskDao;
 import com.github.lzj960515.delaytask.thread.ThreadPool;
 
 import java.util.List;
@@ -11,11 +11,11 @@ import java.util.List;
  */
 public class DelayTaskRunner implements Runnable {
 
-    private final DelayTaskRepository delayTaskRepository;
+    private final DelayTaskDao delayTaskDao;
     private final List<Long> taskIds;
 
-    public DelayTaskRunner(DelayTaskRepository delayTaskRepository, List<Long> taskIds){
-        this.delayTaskRepository = delayTaskRepository;
+    public DelayTaskRunner(DelayTaskDao delayTaskDao, List<Long> taskIds){
+        this.delayTaskDao = delayTaskDao;
         this.taskIds = taskIds;
     }
 
@@ -23,7 +23,7 @@ public class DelayTaskRunner implements Runnable {
     public void run() {
         // 1.查询任务
         for (Long taskId : taskIds) {
-            ThreadPool.DELAY_TASK_INVOKER.execute(new DelayTaskInvoker(delayTaskRepository, taskId));
+            ThreadPool.DELAY_TASK_INVOKER.execute(new DelayTaskInvoker(delayTaskDao, taskId));
         }
     }
 }

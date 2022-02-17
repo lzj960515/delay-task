@@ -1,9 +1,9 @@
 package com.github.lzj960515.delaytask.core;
 
-import com.github.lzj960515.delaytask.util.TimeUtil;
 import com.github.lzj960515.delaytask.constant.ExecuteStatus;
 import com.github.lzj960515.delaytask.core.domain.DelayTaskInfo;
-import com.github.lzj960515.delaytask.dao.DelayTaskRepository;
+import com.github.lzj960515.delaytask.dao.DelayTaskDao;
+import com.github.lzj960515.delaytask.util.TimeUtil;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class DelayTaskTemplate {
 
     @Resource
-    private DelayTaskRepository delayTaskRepository;
+    private DelayTaskDao delayTaskDao;
 
     /**
      * 存储任务
@@ -34,7 +34,7 @@ public class DelayTaskTemplate {
         // 1.设置任务状态
         this.setStatus(delayTaskInfo, innerFiveSecond);
         // 2.将任务存入数据库
-        delayTaskRepository.save(delayTaskInfo);
+        delayTaskDao.save(delayTaskInfo);
         // 3.如果任务执行时间在5s内，放入时间轮中
         if(innerFiveSecond){
             TimeRing.put(executeTime, delayTaskInfo.getId());

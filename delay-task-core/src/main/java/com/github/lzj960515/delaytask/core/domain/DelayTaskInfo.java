@@ -1,26 +1,16 @@
 package com.github.lzj960515.delaytask.core.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 /**
  * 延时任务信息
  *
  * @author Zijian Liao
  * @since 1.0.0
  */
-@Table(name = "delay_task")
-@Entity
 public class DelayTaskInfo {
 
     /**
      * 任务id：主键
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -52,6 +42,18 @@ public class DelayTaskInfo {
      * 执行结果信息
      */
     private String executeMessage;
+
+    public DelayTaskInfo(){}
+
+    public DelayTaskInfo(Long id, String name, String description, String info, Long executeTime, Integer executeStatus, String executeMessage) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.info = info;
+        this.executeTime = executeTime;
+        this.executeStatus = executeStatus;
+        this.executeMessage = executeMessage;
+    }
 
     public Long getId() {
         return id;
@@ -107,5 +109,18 @@ public class DelayTaskInfo {
 
     public void setExecuteMessage(String executeMessage) {
         this.executeMessage = executeMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "DelayTaskInfo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", info='" + info + '\'' +
+                ", executeTime=" + executeTime +
+                ", executeStatus=" + executeStatus +
+                ", executeMessage='" + executeMessage + '\'' +
+                '}';
     }
 }
